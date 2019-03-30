@@ -18,6 +18,7 @@ def create_Dockerfile(project_root, python_version, requirements_file=None,
         choice = input("(!!) to continue press c/C: \t")
         if not choice.lower() == 'c':
             print("(!!) Avoiding creation of a new Dockerfile")
+            return
 
     # finding manage.py abs path
     managepy = handlers.get_absolute_path(project_root, 'manage.py')
