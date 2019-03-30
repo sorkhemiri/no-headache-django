@@ -195,6 +195,3 @@ def create_entrypoint(project_root):
         print('(!!) Docker file deleted. raising the exception ...')
         raise
 
-
-create_entrypoint('/home/amir/Desktop/manyxwebsite')
-create_Dockerfile('/home/amir/Desktop/manyxwebsite', "python:3.6")
