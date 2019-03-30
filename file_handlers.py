@@ -28,6 +28,15 @@ def get_absolute_path(root_dir, filename):
     return result
 
 
+# returns the same part of two different paths.
+# exp: path1 = '/home/user/project2/src'
+# path2 = '/user/project2/src'
+# result would be: '/user/projec2/src'
+def get_relative_path(path1, path2):
+    from pathlib import Path
+    return Path(path1).relative_to(path2)
+
+
 # this module will join txt files together.
 # file1 and file2 are abs path for two files.
 # it adds file2 to the end of file1 in a new file.
@@ -63,6 +72,3 @@ def add_to_file(text, file, add_to_top=False):
 
     # returning the path for result file.
     return file
-
-
-
