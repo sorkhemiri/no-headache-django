@@ -41,5 +41,10 @@ def join_files(file1, file2, newfile_path):
 # this will add a txt to a text file(abs path required).
 # add_to_top is True is adds it to the top of the text file.
 def add_to_file(text, file, add_to_top=False):
-    pass
+    with open(file) as file:
+        file_contents = file.read()
+    print(file_contents)
+
+
+add_to_file("helllo", '/home/amir/Desktop/sezar.py')
 
