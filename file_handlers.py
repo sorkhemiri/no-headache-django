@@ -1,3 +1,4 @@
+# these functions are not written for high performance use.
 import os
 
 
@@ -40,11 +41,28 @@ def join_files(file1, file2, newfile_path):
 
 # this will add a txt to a text file(abs path required).
 # add_to_top is True is adds it to the top of the text file.
+# this function automatically adds newline when required.
 def add_to_file(text, file, add_to_top=False):
-    with open(file) as file:
-        file_contents = file.read()
-    print(file_contents)
+
+    if add_to_top:
+        with open(file) as in_file:
+            file_contents = in_file.read()
+
+        # removing the file
+        os.system(f"rm {file}")
+
+        with open(file, 'w') as out_file:
+            out_file.write(text)
+            out_file.write('\n')
+            out_file.write(file_contents)
+    else:
+        with open(file, 'a') as file:
+            # going to new line
+            file.write('\n')
+            file.write(text)
+
+    # returning the path for result file.
+    return file
 
 
-add_to_file("helllo", '/home/amir/Desktop/sezar.py')
 
