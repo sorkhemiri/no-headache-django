@@ -115,6 +115,3 @@ def create_Dockerfile(project_root, python_version, requirements_file=None,
         os.system(f'rm {docker_path}')
         print('(!!) Docker file deleted. raising the exception ...')
         raise
-
-
-create_Dockerfile('/home/amir/Desktop/manyxwebsite', "python:3.6")
