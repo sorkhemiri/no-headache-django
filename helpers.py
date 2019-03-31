@@ -4,7 +4,8 @@
 import os
 import file_handlers as handlers
 from exceptions import (EntryPointNotAvailable,
-                        RequirementsNotAvailable)
+                        RequirementsNotAvailable,
+                        LinuxProgramNotInstalled)
 
 
 # this function creates a Dockerfile.
@@ -121,7 +122,7 @@ def create_entrypoint(project_root):
     # creating entrypoint.sh file
     try:
         with open(entrypoint_path, 'w') as entrypoint_file:
-            entrypoint_file.write("# This docker file is automatically created by 'no-headache-django' project.\n")
+            entrypoint_file.write("# This file is automatically created by 'no-headache-django' project.\n")
             entrypoint_file.write("# Please star me on github: http://github.com/mrsaemir/no-headache-django\n")
             entrypoint_file.write("#!/bin/bash\n\n")
             managepy_relative_path = os.path.join(handlers.get_relative_path(managepy_abs_path,
@@ -151,15 +152,14 @@ def get_or_create_requirements(project_root):
     if not os.path.exists(requirements_file_path):
         try:
             with open(requirements_file_path, 'w') as requirements_file:
-                requirements_file.write("# This docker file is automatically created by 'no-headache-django' project.\n")
-                requirements_file.write("# Please star me on github: http://github.com/mrsaemir/no-headache-django\n")
                 print(f"(++) Requirements.txt file created in {requirements_file_path}")
         except Exception as e:
             print('(!!) An error occurred. rolling back ... ')
             os.system(f'rm {requirements_file_path}')
             print('(!!) Requirements.txt file deleted. raising the exception ...')
             raise
-    # inspecting Gunicorn.
+    # inspecting requirements ...
+    inspect_django_dependency(requirements_file_path)
     inspect_gunicorn_dependency(requirements_file_path)
     return requirements_file_path
 
@@ -181,10 +181,26 @@ def inspect_postgres_dependency(requirements_path):
             requirements_file.write('\npsycopg2-binary==2.7.4')
 
 
+def inspect_django_dependency(requirements_path, django_version=None):
+    with open(requirements_path, 'r+') as requirements_file:
+        requirements = requirements_file.read()
+        raise IOError(requirements.lower().count('django'))
+        if requirements.lower().count('django') == 2:
+            print('(++) Adding Django to project requirements.')
+            if django_version:
+                requirements_file.write(f'\nDjango=={django_version}')
+            else:
+                requirements_file.write('\nDjango')
+
+
 # for new projects only!
 def design_settings_file(project_root, db):
     old_settings_module = handlers.get_settings_file(project_root)
     settings_base = os.path.join(os.path.dirname(old_settings_module), 'settings_base.py')
+    # if a project is already designed then avoid changing it.
+    if os.path.exists(settings_base):
+        print("(!!) Already designed settings.py file. Avoiding action.")
+        return
     try:
         # renaming the old one
         os.system(f"mv {old_settings_module} {settings_base}")
@@ -200,6 +216,31 @@ def design_settings_file(project_root, db):
         raise
 
 
-def init_dj_project(python_version, django_version):
-    pass
+# inspects if a program is installed in linux
+def is_installed(program_name):
+    from shutil import which
+    return which(program_name) is not None
+
+
+# python/django version are version numbers.
+def init_dj_project(project_name, project_root, python_version, django_version):
+    project_path = os.path.exists(os.path.join(project_root, project_name))
+    if project_path:
+        print('(!!) Project already exists avoiding creation')
+        return
+
+    if not is_installed(f'python{python_version}'):
+        raise LinuxProgramNotInstalled(f'python{python_version}')
+
+    if not is_installed('virtualenv'):
+        raise LinuxProgramNotInstalled('virtualenv')
+
+    # creating virtuelenv
+    venv_path = os.path.join('../', project_root, 'venv')
+    if not os.path.exists(venv_path):
+        os.system(f'virtualenv --python python{python_version} {venv_path}')
+    # installing django
+    os.system(f'{os.path.join(venv_path, "bin/pip")} install django=={django_version}')
+    # creating the project
+    os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
 
