@@ -194,11 +194,10 @@ def inspect_django_dependency(requirements_path, django_version=None):
 # for new projects only!
 def design_settings_file(project_name, project_root, db):
     settings_module = handlers.get_settings_file(project_root)
-
+    settings_backup = os.path.join(settings_module, ".bu")
     try:
         # replacing the new one.
         if db == 'postgres':
-            settings_backup = os.path.join(settings_module, ".bu")
             os.system(f'mv {settings_module} {settings_backup}')
             os.system(f'cp ./dj/dj2/postgres/settings.py {settings_module}')
             inspect_postgres_dependency(get_or_create_requirements(project_root))
