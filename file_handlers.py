@@ -116,7 +116,8 @@ def get_wsgi_file(project_root):
 
 
 def get_settings_file(project_root):
-    settings_abs_path = get_absolute_path(project_root, 'settings.py')
+    manage_py_path = get_managepy_path(project_root)
+    settings_abs_path = get_absolute_path(os.path.dirname(manage_py_path), 'settings.py')
     if not settings_abs_path:
         raise SettingsFileNotAvailable(
             f"(!!) Can not find 'settings.py' file within directory: {project_root}"

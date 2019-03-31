@@ -145,7 +145,7 @@ def create_entrypoint(project_root):
     return entrypoint_path
 
 
-def create_requirements(project_root):
+def get_or_create_requirements(project_root):
     managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
     requirements_file_path = os.path.join(managepy_abs_path, 'requirements.txt')
     if not os.path.exists(requirements_file_path):
@@ -153,22 +153,53 @@ def create_requirements(project_root):
             with open(requirements_file_path, 'w') as requirements_file:
                 requirements_file.write("# This docker file is automatically created by 'no-headache-django' project.\n")
                 requirements_file.write("# Please star me on github: http://github.com/mrsaemir/no-headache-django\n")
-                requirements_file.write('\ngunicorn==19.9.0')
-                print(f"(++) requirements.txt file created in {requirements_file_path}")
-            return requirements_file_path
+                print(f"(++) Requirements.txt file created in {requirements_file_path}")
         except Exception as e:
             print('(!!) An error occurred. rolling back ... ')
             os.system(f'rm {requirements_file_path}')
             print('(!!) Requirements.txt file deleted. raising the exception ...')
             raise
+    # inspecting Gunicorn.
+    inspect_gunicorn_dependency(requirements_file_path)
     return requirements_file_path
 
 
-# this function checks if a certain requiremets file contains gunicorn.
-def inspect_requirements(requirements_path):
-    with open(requirements_path, 'a+') as requirements_file:
+# this function checks if a certain requirements file contains gunicorn.
+def inspect_gunicorn_dependency(requirements_path):
+    with open(requirements_path, 'r+') as requirements_file:
         requirements = requirements_file.read()
         if 'gunicorn' not in requirements.lower():
             print('(++) Adding Gunicorn to project requirements.')
             requirements_file.write('\ngunicorn==19.9.0')
+
+
+def inspect_postgres_dependency(requirements_path):
+    with open(requirements_path, 'r+') as requirements_file:
+        requirements = requirements_file.read()
+        if 'psycopg2-binary' not in requirements.lower():
+            print('(++) Adding Postgres to project requirements.')
+            requirements_file.write('\npsycopg2-binary==2.7.4')
+
+
+# for new projects only!
+def design_settings_file(project_root, db):
+    old_settings_module = handlers.get_settings_file(project_root)
+    settings_base = os.path.join(os.path.dirname(old_settings_module), 'settings_base.py')
+    try:
+        # renaming the old one
+        os.system(f"mv {old_settings_module} {settings_base}")
+        # replacing the new one.
+        if db == 'postgres':
+            os.system(f'cp ./dj/dj2/postgres/settings.py {old_settings_module}')
+            inspect_postgres_dependency(get_or_create_requirements(project_root))
+        else:
+            pass
+    except Exception as e:
+        print('(!!) An error occurred designing settings file. rolling back ... ')
+        os.system(f"mv {settings_base} {old_settings_module}")
+        raise
+
+
+def init_dj_project(python_version, django_version):
+    pass
 
