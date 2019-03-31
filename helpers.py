@@ -4,37 +4,15 @@
 import os
 import file_handlers as handlers
 from exceptions import (EntryPointNotAvailable,
-                        RequirementsNotAvailable,
-                        ManageFileNotAvailable,
-                        WsgiFileNotAvailable)
+                        RequirementsNotAvailable)
 
 
 # this function creates a Dockerfile.
 # python version is the version specified for the Dockerfile and is required.
 def create_Dockerfile(project_root, python_version, requirements_file=None,
                       entrypoint_file=None):
-
-    # finding manage.py abs path
-    managepy = handlers.get_absolute_path(project_root, 'manage.py')
-
-    if not managepy:
-        raise ManageFileNotAvailable(
-            f"(!!) Can not find 'manage.py' file within directory: {project_root}"
-        )
-
-    # if there are more than one manage.py module then raise an error.
-    managepy_len = len(managepy)
-    if managepy_len != 1:
-        raise FileExistsError(
-            f"""(!!) There are more than one manage.py modules within this directory ({project_root}),
-            Try resolving this problem by giving the exact project root.
-            Found manage.py modules are:
-            {managepy}
-            """
-        )
-
     # Dockerfile path
-    managepy_abs_path = os.path.dirname(managepy[0])
+    managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
     docker_path = os.path.join(managepy_abs_path, 'Dockerfile')
 
     # if the docker file already exists, then do nothing
@@ -124,27 +102,8 @@ def create_Dockerfile(project_root, python_version, requirements_file=None,
 
 
 def create_entrypoint(project_root):
-    # finding manage.py abs path
-    managepy = handlers.get_absolute_path(project_root, 'manage.py')
-
-    if not managepy:
-        raise ManageFileNotAvailable(
-            f"(!!) Can not find 'manage.py' file within directory: {project_root}"
-        )
-
-    # if there are more than one manage.py module then raise an error.
-    managepy_len = len(managepy)
-    if managepy_len != 1:
-        raise FileExistsError(
-            f"""(!!) There are more than one manage.py modules within this directory ({project_root}),
-            Try resolving this problem by giving the exact project root.
-            Found manage.py modules are:
-            {managepy}
-            """
-        )
-
     # Dockerfile path
-    managepy_abs_path = os.path.dirname(managepy[0])
+    managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
     entrypoint_path = os.path.join(managepy_abs_path, 'entrypoint.sh')
 
     # checking if there are no entrypoints available.
@@ -172,19 +131,8 @@ def create_entrypoint(project_root):
             entrypoint_file.write(f"python {managepy_relative_path} migrate\n")
             entrypoint_file.write(f"python {managepy_relative_path} collectstatic --noinput\n")
             # setting wsgi file.
-            wsgi_file = handlers.get_absolute_path(managepy_abs_path, 'wsgi.py')
-            if not wsgi_file:
-                raise WsgiFileNotAvailable(
-                    f"(!!) Can not find 'wsgi.py' file within directory: {os.path.dirname(managepy_abs_path)}"
-                )
-            if len(wsgi_file) != 1:
-                raise FileExistsError(
-                    f"""(!!) There are more than one wsgi.py modules within this directory ({os.path.dirname(managepy_abs_path)}),
-                    Found wsgi.py modules are:
-                    {wsgi_file}
-                    """
-                )
-            wsgi_file = handlers.get_relative_path(wsgi_file[0], os.path.dirname(entrypoint_path))
+            wsgi_file = handlers.get_relative_path(handlers.get_wsgi_file(project_root),
+                                                   os.path.dirname(entrypoint_path))
             wsgi_file_dir_name = os.path.dirname(wsgi_file)
             entrypoint_file.write(f"gunicorn {wsgi_file_dir_name}.wsgi:application -w 2 -b :8000\n")
 
@@ -194,4 +142,24 @@ def create_entrypoint(project_root):
         os.system(f'rm {entrypoint_path}')
         print('(!!) Docker file deleted. raising the exception ...')
         raise
+    return entrypoint_path
 
+
+def create_requirements(project_root):
+    managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
+    requirements_file_path = os.path.join(managepy_abs_path, 'requirements.txt')
+    if not os.path.exists(requirements_file_path):
+        with open(requirements_file_path, 'w') as requirements_file:
+            requirements_file.write("# This docker file is automatically created by 'no-headache-django' project.\n")
+            requirements_file.write("# Please star me on github: http://github.com/mrsaemir/no-headache-django\n")
+            requirements_file.write('\ngunicorn==19.9.0')
+    return requirements_file_path
+
+
+# this function checks if a certain requiremets file contains gunicorn.
+def inspect_requirements(requirements_path):
+    with open(requirements_path) as requirements_file:
+        requirements = requirements_file.read()
+        if 'gunicorn' not in requirements.lower():
+            print('(++) Adding Gunicorn to project requirements.')
+            requirements_file.write('\ngunicorn==19.9.0')

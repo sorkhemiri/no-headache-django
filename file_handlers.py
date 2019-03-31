@@ -1,5 +1,6 @@
 # these functions are not written for high performance use.
 import os
+from .exceptions import ManageFileNotAvailable, WsgiFileNotAvailable
 
 
 # this function returns the absolute path of the
@@ -72,3 +73,46 @@ def add_to_file(text, file, add_to_top=False):
 
     # returning the path for result file.
     return file
+
+
+def get_managepy_path(project_root):
+    # finding manage.py abs path
+    managepy = get_absolute_path(project_root, 'manage.py')
+
+    if not managepy:
+        raise ManageFileNotAvailable(
+            f"(!!) Can not find 'manage.py' file within directory: {project_root}"
+        )
+
+    # if there are more than one manage.py module then raise an error.
+    managepy_len = len(managepy)
+    if managepy_len != 1:
+        raise FileExistsError(
+            f"""(!!) There are more than one manage.py modules within this directory ({project_root}),
+            Try resolving this problem by giving the exact project root.
+            Found manage.py modules are:
+            {managepy}
+            """
+        )
+
+    # Dockerfile path
+    managepy_abs_path = os.path.dirname(managepy[0])
+    return managepy_abs_path
+
+
+def get_wsgi_file(project_root):
+    managepy_abs_path = get_managepy_path(project_root)
+    wsgi_file = get_absolute_path(managepy_abs_path, 'wsgi.py')
+    if not wsgi_file:
+        raise WsgiFileNotAvailable(
+            f"(!!) Can not find 'wsgi.py' file within directory: {os.path.dirname(managepy_abs_path)}"
+        )
+    if len(wsgi_file) != 1:
+        raise FileExistsError(
+            f"""(!!) There are more than one wsgi.py modules within this directory ({os.path.dirname(
+                managepy_abs_path)}),
+            Found wsgi.py modules are:
+            {wsgi_file}
+            """
+        )
+    return wsgi_file[0]
