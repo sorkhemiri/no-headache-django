@@ -1,6 +1,6 @@
 # these functions are not written for high performance use.
 import os
-from exceptions import ManageFileNotAvailable, WsgiFileNotAvailable
+from exceptions import ManageFileNotAvailable, SettingsFileNotAvailable, WsgiFileNotAvailable
 
 
 # this function returns the absolute path of the
@@ -103,14 +103,29 @@ def get_wsgi_file(project_root):
     wsgi_file = get_absolute_path(os.path.dirname(managepy_abs_path), 'wsgi.py')
     if not wsgi_file:
         raise WsgiFileNotAvailable(
-            f"(!!) Can not find 'wsgi.py' file within directory: {os.path.dirname(managepy_abs_path)}"
+            f"(!!) Can not find 'wsgi.py' file within directory: {project_root}"
         )
     if len(wsgi_file) != 1:
         raise FileExistsError(
-            f"""(!!) There are more than one wsgi.py modules within this directory ({os.path.dirname(
-                managepy_abs_path)}),
+            f"""(!!) There are more than one wsgi.py modules within this directory ({project_root}),
             Found wsgi.py modules are:
             {wsgi_file}
             """
         )
     return wsgi_file[0]
+
+
+def get_settings_file(project_root):
+    settings_abs_path = get_absolute_path(project_root, 'settings.py')
+    if not settings_abs_path:
+        raise SettingsFileNotAvailable(
+            f"(!!) Can not find 'settings.py' file within directory: {project_root}"
+        )
+    if len(settings_abs_path) != 1:
+        raise FileExistsError(
+            f"""(!!) There are more than one settings.py modules within this directory ({project_root}),
+            Found wsgi.py modules are:
+            {settings_abs_path}
+            """
+        )
+    return settings_abs_path[0]
