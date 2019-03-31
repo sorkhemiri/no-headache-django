@@ -159,7 +159,6 @@ def get_or_create_requirements(project_root):
             print('(!!) Requirements.txt file deleted. raising the exception ...')
             raise
     # inspecting requirements ...
-    inspect_django_dependency(requirements_file_path)
     inspect_gunicorn_dependency(requirements_file_path)
     return requirements_file_path
 
@@ -184,8 +183,7 @@ def inspect_postgres_dependency(requirements_path):
 def inspect_django_dependency(requirements_path, django_version=None):
     with open(requirements_path, 'r+') as requirements_file:
         requirements = requirements_file.read()
-        raise IOError(requirements.lower().count('django'))
-        if requirements.lower().count('django') == 2:
+        if 'django' not in requirements.lower():
             print('(++) Adding Django to project requirements.')
             if django_version:
                 requirements_file.write(f'\nDjango=={django_version}')
@@ -223,7 +221,7 @@ def is_installed(program_name):
 
 
 # python/django version are version numbers.
-def init_dj_project(project_name, project_root, python_version, django_version):
+def init_dj_project(project_name, project_root, python_version, django_version=None):
     project_path = os.path.exists(os.path.join(project_root, project_name))
     if project_path:
         print('(!!) Project already exists avoiding creation')
@@ -240,7 +238,18 @@ def init_dj_project(project_name, project_root, python_version, django_version):
     if not os.path.exists(venv_path):
         os.system(f'virtualenv --python python{python_version} {venv_path}')
     # installing django
-    os.system(f'{os.path.join(venv_path, "bin/pip")} install django=={django_version}')
+    if django_version:
+        os.system(f'{os.path.join(venv_path, "bin/pip")} install django=={django_version}')
+        inspect_django_dependency(get_or_create_requirements(project_root), django_version)
+    else:
+        os.system(f'{os.path.join(venv_path, "bin/pip")} install django')
+        inspect_django_dependency(get_or_create_requirements(project_root))
     # creating the project
     os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
+
+
+def init_git(project_root):
+    if not is_installed(f'git'):
+        raise LinuxProgramNotInstalled(f'git')
+    os.system(f'cd {project_root} && git init')
 
