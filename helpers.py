@@ -194,7 +194,8 @@ def inspect_django_dependency(requirements_path, django_version=None):
 # for new projects only!
 def design_settings_file(project_name, project_root, db):
     settings_module = handlers.get_settings_file(project_root)
-    settings_backup = os.path.join(settings_module, ".bu")
+    settings_backup = settings_module + '.backup'
+
     try:
         # replacing the new one.
         if db == 'postgres':
@@ -253,5 +254,8 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
 def init_git(project_root):
     if not is_installed(f'git'):
         raise LinuxProgramNotInstalled(f'git')
-    os.system(f'cd {project_root} && git init')
-
+    # creating Git only if it does not exist.
+    if not os.path.exists(os.path.join('../', project_root, '.git')):
+        os.system(f'cd {project_root} && git init')
+    else:
+        print('(!!) Git repository already exists. Avoiding creation.')
