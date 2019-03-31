@@ -2,8 +2,9 @@ import helpers
 
 
 # starting a new project
-def startproject(project_name, project_root, db, python_verision, django_version=None):
-    if python_verision >= 3:
+def startproject(project_name, project_root, db, python_version, django_version=None):
+    if python_version >= 3:
+        print(f"(++) Initializing project {project_name} with python{python_version}")
         # starting project
         helpers.init_dj_project(project_name, project_root, 3.7, django_version)
         helpers.design_settings_file(project_root, db)
@@ -37,3 +38,6 @@ def startproject(project_name, project_root, db, python_verision, django_version
         helpers.create_Dockerfile(project_root, "python:2.7-alpine")
         # starting version control
         helpers.init_git(project_root)
+
+
+startproject('urlo', '/home/amir/Desktop/urlo', 'postgres', 3.7, '2.1.7')

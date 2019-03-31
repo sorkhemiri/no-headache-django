@@ -192,25 +192,26 @@ def inspect_django_dependency(requirements_path, django_version=None):
 
 
 # for new projects only!
-def design_settings_file(project_root, db):
-    old_settings_module = handlers.get_settings_file(project_root)
-    settings_base = os.path.join(os.path.dirname(old_settings_module), 'settings_base.py')
-    # if a project is already designed then avoid changing it.
-    if os.path.exists(settings_base):
-        print("(!!) Already designed settings.py file. Avoiding action.")
-        return
+def design_settings_file(project_name, project_root, db):
+    settings_module = handlers.get_settings_file(project_root)
+
     try:
-        # renaming the old one
-        os.system(f"mv {old_settings_module} {settings_base}")
         # replacing the new one.
         if db == 'postgres':
-            os.system(f'cp ./dj/dj2/postgres/settings.py {old_settings_module}')
+            settings_backup = os.path.join(settings_module, ".bu")
+            os.system(f'mv {settings_module} {settings_backup}')
+            os.system(f'cp ./dj/dj2/postgres/settings.py {settings_module}')
             inspect_postgres_dependency(get_or_create_requirements(project_root))
+            os.system(f"rm {settings_backup}")
+
+            with open(settings_module, 'a+') as settings:
+                settings.write(f"\n\nROOT_URLCONF = {project_name}.url")
+                settings.write(f"\nWSGI_APPLICATION = '{project_name}.wsgi.application'")
         else:
             pass
     except Exception as e:
         print('(!!) An error occurred designing settings file. rolling back ... ')
-        os.system(f"mv {settings_base} {old_settings_module}")
+        os.system(f"mv {settings_backup} {settings_module}")
         raise
 
 
@@ -224,7 +225,7 @@ def is_installed(program_name):
 def init_dj_project(project_name, project_root, python_version, django_version=None):
     project_path = os.path.exists(os.path.join(project_root, project_name))
     if project_path:
-        print('(!!) Project already exists avoiding creation')
+        print('(!!) Project already exists. avoiding creation')
         return
 
     if not is_installed(f'python{python_version}'):
@@ -240,12 +241,14 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
     # installing django
     if django_version:
         os.system(f'{os.path.join(venv_path, "bin/pip")} install django=={django_version}')
+        # creating the project
+        os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
         inspect_django_dependency(get_or_create_requirements(project_root), django_version)
     else:
         os.system(f'{os.path.join(venv_path, "bin/pip")} install django')
+        # creating the project
+        os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
         inspect_django_dependency(get_or_create_requirements(project_root))
-    # creating the project
-    os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
 
 
 def init_git(project_root):
