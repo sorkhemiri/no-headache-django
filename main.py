@@ -7,7 +7,7 @@ def startproject(project_name, project_root, db, python_version, django_version=
         print(f"(++) Initializing project {project_name} with python{python_version}")
         # starting project
         helpers.init_dj_project(project_name, project_root, 3.7, django_version)
-        helpers.design_settings_file(project_root, db)
+        helpers.design_settings_file(project_name, project_root, db)
         # checking dependencies
         requirements_path = helpers.get_or_create_requirements(project_root)
         helpers.inspect_gunicorn_dependency(requirements_path)
@@ -24,9 +24,9 @@ def startproject(project_name, project_root, db, python_version, django_version=
     else:
         # starting project
         helpers.init_dj_project(project_name, project_root, 2.7, django_version)
-        helpers.design_settings_file(project_root, db)
+        helpers.design_settings_file(project_name, project_root, db)
         # checking dependencies
-        requirements_path = helpers.get_or_create_requirements(project_root, db)
+        requirements_path = helpers.get_or_create_requirements(project_root)
         helpers.inspect_gunicorn_dependency(requirements_path)
         helpers.inspect_django_dependency(requirements_path)
 

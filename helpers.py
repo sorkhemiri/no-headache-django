@@ -205,7 +205,7 @@ def design_settings_file(project_name, project_root, db):
             os.system(f"rm {settings_backup}")
 
             with open(settings_module, 'a+') as settings:
-                settings.write(f"\n\nROOT_URLCONF = {project_name}.url")
+                settings.write(f"\n\nROOT_URLCONF = '{project_name}.urls'")
                 settings.write(f"\nWSGI_APPLICATION = '{project_name}.wsgi.application'")
         else:
             pass
