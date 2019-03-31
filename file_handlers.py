@@ -1,6 +1,6 @@
 # these functions are not written for high performance use.
 import os
-from .exceptions import ManageFileNotAvailable, WsgiFileNotAvailable
+from exceptions import ManageFileNotAvailable, WsgiFileNotAvailable
 
 
 # this function returns the absolute path of the
@@ -95,14 +95,12 @@ def get_managepy_path(project_root):
             """
         )
 
-    # Dockerfile path
-    managepy_abs_path = os.path.dirname(managepy[0])
-    return managepy_abs_path
+    return managepy[0]
 
 
 def get_wsgi_file(project_root):
     managepy_abs_path = get_managepy_path(project_root)
-    wsgi_file = get_absolute_path(managepy_abs_path, 'wsgi.py')
+    wsgi_file = get_absolute_path(os.path.dirname(managepy_abs_path), 'wsgi.py')
     if not wsgi_file:
         raise WsgiFileNotAvailable(
             f"(!!) Can not find 'wsgi.py' file within directory: {os.path.dirname(managepy_abs_path)}"

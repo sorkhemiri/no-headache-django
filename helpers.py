@@ -131,16 +131,16 @@ def create_entrypoint(project_root):
             entrypoint_file.write(f"python {managepy_relative_path} migrate\n")
             entrypoint_file.write(f"python {managepy_relative_path} collectstatic --noinput\n")
             # setting wsgi file.
-            wsgi_file = handlers.get_relative_path(handlers.get_wsgi_file(project_root),
-                                                   os.path.dirname(entrypoint_path))
-            wsgi_file_dir_name = os.path.dirname(wsgi_file)
-            entrypoint_file.write(f"gunicorn {wsgi_file_dir_name}.wsgi:application -w 2 -b :8000\n")
+            wsgi_file = handlers.get_wsgi_file(project_root)
+            wsgi_file_rel_path = handlers.get_relative_path(os.path.dirname(wsgi_file), managepy_abs_path)
+
+            entrypoint_file.write(f"gunicorn {wsgi_file_rel_path}.wsgi:application -w 2 -b :8000\n")
 
             print(f"(++) entrypoints.sh file created in {entrypoint_path}")
     except Exception as e:
         print('(!!) An error occurred. rolling back ... ')
         os.system(f'rm {entrypoint_path}')
-        print('(!!) Docker file deleted. raising the exception ...')
+        print('(!!) Entrypoint.sh file deleted. raising the exception ...')
         raise
     return entrypoint_path
 
@@ -149,17 +149,26 @@ def create_requirements(project_root):
     managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
     requirements_file_path = os.path.join(managepy_abs_path, 'requirements.txt')
     if not os.path.exists(requirements_file_path):
-        with open(requirements_file_path, 'w') as requirements_file:
-            requirements_file.write("# This docker file is automatically created by 'no-headache-django' project.\n")
-            requirements_file.write("# Please star me on github: http://github.com/mrsaemir/no-headache-django\n")
-            requirements_file.write('\ngunicorn==19.9.0')
+        try:
+            with open(requirements_file_path, 'w') as requirements_file:
+                requirements_file.write("# This docker file is automatically created by 'no-headache-django' project.\n")
+                requirements_file.write("# Please star me on github: http://github.com/mrsaemir/no-headache-django\n")
+                requirements_file.write('\ngunicorn==19.9.0')
+                print(f"(++) requirements.txt file created in {requirements_file_path}")
+            return requirements_file_path
+        except Exception as e:
+            print('(!!) An error occurred. rolling back ... ')
+            os.system(f'rm {requirements_file_path}')
+            print('(!!) Requirements.txt file deleted. raising the exception ...')
+            raise
     return requirements_file_path
 
 
 # this function checks if a certain requiremets file contains gunicorn.
 def inspect_requirements(requirements_path):
-    with open(requirements_path) as requirements_file:
+    with open(requirements_path, 'a+') as requirements_file:
         requirements = requirements_file.read()
         if 'gunicorn' not in requirements.lower():
             print('(++) Adding Gunicorn to project requirements.')
             requirements_file.write('\ngunicorn==19.9.0')
+
