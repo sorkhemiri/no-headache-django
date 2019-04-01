@@ -1,0 +1,50 @@
+# Automatically created bt "no-headache-django" project.
+# Star me on github http://github.com/mrsaemir/no-headache-django
+
+version: '3'
+
+services:
+  web:
+    restart: always
+    build: .
+    ports:
+      - 8000:8000
+    networks:
+      project_network:
+    depends_on:
+      - db
+    volumes:
+      - ./:/project_core
+      - ./static:/project_core/static
+      - ./media:/project_core/media
+    command: bash -c "python manage.py makemigrations && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+
+    environment:
+      # security
+      - DEBUG=True
+      - SECRET_KEY=top_secret
+      - ALLOWED_HOSTS=["127.0.0.1", "localhost"]
+      # database
+      - DB_NAME=some_db
+      - DB_USER=some_user
+      - DB_PASSWORD=some_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      # STATIC AND MEDIA URL
+      - STATIC_URL=/static/
+      - MEDIA_URL=/media/
+
+  db:
+    restart: always
+    image: postgres:11.1-alpine
+    environment:
+      - POSTGRES_USER=some_user
+      - POSTGRES_PASSWORD=some_password
+      - POSTGRES_DB=some_db
+    networks:
+      project_network:
+    volumes:
+      - ../development_data/postgres:/var/lib/postgresql/data
+
+networks:
+  project_network:

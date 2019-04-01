@@ -10,7 +10,7 @@ from exceptions import (EntryPointNotAvailable,
 
 # this function creates a Dockerfile.
 # python version is the version specified for the Dockerfile and is required.
-def create_Dockerfile(project_root, python_version, requirements_file=None,
+def create_Dockerfile(project_root, python_version, db, requirements_file=None,
                       entrypoint_file=None):
     # Dockerfile path
     managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
@@ -38,10 +38,12 @@ def create_Dockerfile(project_root, python_version, requirements_file=None,
             # settings general env vars.
             docker_file.write("ENV PYTHONDONTWRITEBYTECODE 1\n")
             docker_file.write("ENV PYTHONUNBUFFERED 1\n\n")
+            if db == 'postgres':
+                docker_file.write("RUN apt install libpq-dev\n")
             # creating project core folder.
             docker_file.write("WORKDIR /project_core\n")
             docker_file.write("COPY . /project_core\n\n")
-            # managin staticfiles
+            # managing staticfiles
             docker_file.write("RUN mkdir -p media\n")
             docker_file.write("RUN mkdir -p static\n\n")
             # opening port 8000 by default.
@@ -249,6 +251,8 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
         # creating the project
         os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
         inspect_django_dependency(get_or_create_requirements(project_root))
+    os.system(f'mkdir -p {os.path.join(os.path.join(project_root, project_name), "static")}')
+    os.system(f'mkdir -p {os.path.join(os.path.join(project_root, project_name), "media")}')
 
 
 def init_git(project_root):
@@ -259,3 +263,25 @@ def init_git(project_root):
         os.system(f'cd {project_root} && git init')
     else:
         print('(!!) Git repository already exists. Avoiding creation.')
+
+
+def create_docker_compose(project_root, db):
+    manage_py_path = os.path.dirname(handlers.get_managepy_path(project_root))
+    docker_compose_path = os.path.join(manage_py_path, 'docker-compose.yaml')
+
+    # avoiding creation if it exists.
+    if os.path.exists(docker_compose_path):
+        print(
+            f"(!!) A docker-compose file already exists in {manage_py_path}"
+        )
+        print(f"If you continue, a new docker compose file will be created in {docker_compose_path}")
+        choice = input("(!!) to continue press c/C or anything else to cancel: ")
+        if not choice.lower() == 'c':
+            print("(!!) Avoiding creation of a new Dockerfile")
+            return
+
+    if db == 'postgres':
+        os.system(f'cp ./dj/dj2/postgres/docker-compose.yaml {os.path.join(os.path.dirname(handlers.get_managepy_path(project_root)), "docker-compose.yaml")}')
+
+
+
