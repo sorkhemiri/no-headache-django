@@ -106,7 +106,6 @@ def create_Dockerfile(project_root, python_version, db, requirements_file=None,
         raise
 
 
-
 def create_entrypoint(project_root):
     # Dockerfile path
     managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
@@ -280,8 +279,10 @@ def init_git(project_root):
 def add_readme_file(project_root):
     readme_path = os.path.join(project_root, 'README.rst')
     if not os.path.exists(readme_path):
+        import datetime
         print("(++) Added README.rst file")
-        os.system(f"touch {readme_path}")
+        with open(readme_path, 'w') as readme:
+            readme.write(f"Created on {datetime.date.today()} using no-headache-django automatic project initializer.")
 
 
 def create_docker_compose(project_root, db):
