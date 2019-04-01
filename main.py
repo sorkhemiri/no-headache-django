@@ -25,8 +25,8 @@ def startproject(project_name, project_root, db, python_version):
         helpers.design_settings_file(project_name, project_path, db, python_version)
         # checking dependencies
         requirements_path = helpers.get_or_create_requirements(project_path)
-        helpers.inspect_gunicorn_dependency(requirements_path)
         helpers.inspect_django_dependency(requirements_path)
+        helpers.inspect_gunicorn_dependency(requirements_path)
 
         if db == 'postgres':
             helpers.inspect_postgres_dependency(requirements_path)
@@ -57,9 +57,9 @@ def startproject(project_name, project_root, db, python_version):
 
 
 startproject(
-    project_name='aamazing_project',
+    project_name='amazing_project',
     project_root='/home/amir/Desktop/he',
     db='postgres',
-    python_version=2.7
+    python_version=3.7
 )
 

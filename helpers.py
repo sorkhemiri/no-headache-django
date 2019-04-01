@@ -106,6 +106,7 @@ def create_Dockerfile(project_root, python_version, db, requirements_file=None,
         raise
 
 
+
 def create_entrypoint(project_root):
     # Dockerfile path
     managepy_abs_path = os.path.dirname(handlers.get_managepy_path(project_root))
@@ -163,6 +164,7 @@ def get_or_create_requirements(project_root):
             print('(!!) Requirements.txt file deleted. raising the exception ...')
             raise
     # inspecting requirements ...
+    inspect_django_dependency(requirements_file_path)
     inspect_gunicorn_dependency(requirements_file_path)
     return requirements_file_path
 

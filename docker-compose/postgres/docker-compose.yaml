@@ -17,7 +17,7 @@ services:
       - ./:/project_core
       - ../development_data/static:/project_core/static
       - ../development_data/media:/project_core/media
-    command: bash -c "python manage.py makemigrations && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
 
     environment:
       # security
