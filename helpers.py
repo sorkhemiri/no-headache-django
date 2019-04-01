@@ -244,8 +244,13 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
     if django_version:
         os.system(f'{os.path.join(venv_path, "bin/pip")} install django=={django_version}')
         # creating the project
-        os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
-        inspect_django_dependency(get_or_create_requirements(project_root), django_version)
+        try:
+            os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
+            inspect_django_dependency(get_or_create_requirements(project_root), django_version)
+        except:
+            print("(!!) Error. Rolling back ... ")
+            os.system(f'rm -rf {project_path}')
+            raise
     else:
         os.system(f'{os.path.join(venv_path, "bin/pip")} install django')
         # creating the project
@@ -292,4 +297,6 @@ def create_docker_compose(project_root, db):
         os.system(f'cp ./dj/dj2/postgres/docker-compose.yaml {os.path.join(os.path.dirname(handlers.get_managepy_path(project_root)), "docker-compose.yaml")}')
 
 
-
+def has_valid_name_django(name):
+    import re
+    return re.fullmatch(r'[a-z0-9_]+', name.lower())
