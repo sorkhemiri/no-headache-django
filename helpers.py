@@ -184,33 +184,33 @@ def inspect_postgres_dependency(requirements_path):
             requirements_file.write('\npsycopg2-binary==2.7.4')
 
 
-def inspect_django_dependency(requirements_path, django_version=None):
+def inspect_django_dependency(requirements_path):
     with open(requirements_path, 'r+') as requirements_file:
         requirements = requirements_file.read()
         if 'django' not in requirements.lower():
             print('(++) Adding Django to project requirements.')
-            if django_version:
-                requirements_file.write(f'\nDjango=={django_version}')
-            else:
-                requirements_file.write('\nDjango')
+            requirements_file.write('\nDjango')
 
 
 # for new projects only!
-def design_settings_file(project_name, project_root, python_version):
+def design_settings_file(project_name, project_root, db,python_version):
     settings_module = handlers.get_settings_file(project_root)
     settings_backup = settings_module + '.backup'
 
     try:
         # replacing the new one.
         if python_version >= 3:
-            os.system(f'mv {settings_module} {settings_backup}')
-            os.system(f'cp ./dj/dj2/postgres/settings.py {settings_module}')
-            inspect_postgres_dependency(get_or_create_requirements(project_root))
-            os.system(f"rm {settings_backup}")
+            if db == 'postgres':
+                os.system(f'mv {settings_module} {settings_backup}')
+                os.system(f'cp ./dj/dj2/postgres/settings.py {settings_module}')
+                inspect_postgres_dependency(get_or_create_requirements(project_root))
+                os.system(f"rm {settings_backup}")
 
-            with open(settings_module, 'a+') as settings:
-                settings.write(f"\n\nROOT_URLCONF = '{project_name}.urls'")
-                settings.write(f"\nWSGI_APPLICATION = '{project_name}.wsgi.application'")
+                with open(settings_module, 'a+') as settings:
+                    settings.write(f"\n\nROOT_URLCONF = '{project_name}.urls'")
+                    settings.write(f"\nWSGI_APPLICATION = '{project_name}.wsgi.application'")
+            else:
+                raise NotImplementedError()
         else:
             raise NotImplementedError("version 1 settings")
 
@@ -249,7 +249,7 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
         # creating the project
         try:
             os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
-            inspect_django_dependency(get_or_create_requirements(project_root), django_version)
+            inspect_django_dependency(get_or_create_requirements(project_root))
         except:
             print("(!!) Error. Rolling back ... ")
             os.system(f'rm -rf {project_path}')

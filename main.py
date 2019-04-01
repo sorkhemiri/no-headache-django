@@ -4,7 +4,7 @@ from file_handlers import can_sudo
 
 
 # starting a new project
-def startproject(project_name, project_root, db, python_version, django_version=None):
+def startproject(project_name, project_root, db, python_version):
     if not helpers.has_valid_name_django(project_name):
         raise IOError("(!!) Project names only have numbers, letters or underscores.")
 
@@ -21,12 +21,12 @@ def startproject(project_name, project_root, db, python_version, django_version=
 
         print(f"(++) Initializing project {project_name} with python{python_version}")
         # starting project
-        helpers.init_dj_project(project_name, project_path, python_version, django_version)
-        helpers.design_settings_file(project_name, project_path, db)
+        helpers.init_dj_project(project_name, project_path, python_version)
+        helpers.design_settings_file(project_name, project_path, db, python_version)
         # checking dependencies
         requirements_path = helpers.get_or_create_requirements(project_path)
         helpers.inspect_gunicorn_dependency(requirements_path)
-        helpers.inspect_django_dependency(requirements_path, '2.1.7')
+        helpers.inspect_django_dependency(requirements_path)
 
         if db == 'postgres':
             helpers.inspect_postgres_dependency(requirements_path)
@@ -57,7 +57,7 @@ def startproject(project_name, project_root, db, python_version, django_version=
 
 
 startproject(
-    project_name='amazing_project',
+    project_name='aamazing_project',
     project_root='/home/amir/Desktop/he',
     db='postgres',
     python_version=2.7
