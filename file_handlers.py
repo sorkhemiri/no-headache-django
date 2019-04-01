@@ -116,17 +116,29 @@ def get_wsgi_file(project_root):
 
 
 def get_settings_file(project_root):
-    manage_py_path = get_managepy_path(project_root)
-    settings_abs_path = get_absolute_path(os.path.dirname(manage_py_path), 'settings.py')
-    if not settings_abs_path:
-        raise SettingsFileNotAvailable(
-            f"(!!) Can not find 'settings.py' file within directory: {project_root}"
-        )
-    if len(settings_abs_path) != 1:
-        raise FileExistsError(
-            f"""(!!) There are more than one settings.py modules within this directory ({project_root}),
-            Found wsgi.py modules are:
-            {settings_abs_path}
-            """
-        )
-    return settings_abs_path[0]
+    try:
+        manage_py_path = get_managepy_path(project_root)
+        settings_abs_path = get_absolute_path(os.path.dirname(manage_py_path), 'settings.py')
+        if not settings_abs_path:
+            raise SettingsFileNotAvailable(
+                f"(!!) Can not find 'settings.py' file within directory: {project_root}"
+            )
+        if len(settings_abs_path) != 1:
+            raise FileExistsError(
+                f"""(!!) There are more than one settings.py modules within this directory ({project_root}),
+                Found wsgi.py modules are:
+                {settings_abs_path}
+                """
+            )
+        return settings_abs_path[0]
+    except PermissionError as e:
+        raise PermissionError("Need root access")
+
+
+# a function that says if a user is admin
+def can_sudo():
+    import os
+    user = os.getenv("SUDO_USER")
+    if user is None:
+        return False
+    return True

@@ -262,11 +262,18 @@ def init_git(project_root):
     if not os.path.exists(os.path.join('../', project_root, '.git')):
         os.system(f'cd {project_root} && git init')
         if not os.path.exists(os.path.join(project_root, '.gitignore')):
+            print("(++) Added .gitignore file")
             os.system(f'cd {project_root} && touch .gitignore')
     else:
         print('(!!) Git repository already exists. Avoiding creation.')
 
+
 def add_readme_file(project_root):
+    readme_path = os.path.join(project_root, 'README.rst')
+    if not os.path.exists(readme_path):
+        print("(++) Added README.rst file")
+        os.system(f"touch {readme_path}")
+
 
 def create_docker_compose(project_root, db):
     manage_py_path = os.path.dirname(handlers.get_managepy_path(project_root))

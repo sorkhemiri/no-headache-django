@@ -1,5 +1,6 @@
 import os
 import helpers
+from file_handlers import can_sudo
 
 
 # starting a new project
@@ -32,7 +33,9 @@ def startproject(project_name, project_root, db, python_version, django_version=
             # creating docker-compose file
             helpers.create_docker_compose(project_path, db)
             # starting version control
-            helpers.init_git(project_path)
+            helpers.init_git(os.path.join(project_path, project_name))
+            # adding readme.rst
+            helpers.add_readme_file(os.path.join(project_path, project_name))
         else:
             # starting project
             helpers.init_dj_project(project_path, project_root, 2.7, django_version)
@@ -52,8 +55,19 @@ def startproject(project_name, project_root, db, python_version, django_version=
             helpers.create_docker_compose(project_path, db)
             # starting version control
             helpers.init_git(project_path)
+
+    except PermissionError as e:
+        if can_sudo():
+            pass
+        else:
+            raise PermissionError("(!!) Run as Administrator or change permissions.")
+
     except Exception as e:
         raise
 
+    finally:
+        if can_sudo():
+            print("(!!) Resetting permissions")
+            os.system(f'chmod 777 -R {project_path}')
 
-startproject('urloa', '/home/amir/Desktop/', 'postgres', 3.7)
+
