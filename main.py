@@ -58,7 +58,7 @@ def startproject(project_name, project_root, db, python_version):
 
 startproject(
     project_name='amazing_project',
-    project_root='/home/amir/Desktop/he',
+    project_root='/home/amir/Desktop',
     db='postgres',
     python_version=3.7
 )
