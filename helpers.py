@@ -251,8 +251,6 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
         # creating the project
         os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
         inspect_django_dependency(get_or_create_requirements(project_root))
-    os.system(f'mkdir -p {os.path.join(os.path.join(project_root, project_name), "static")}')
-    os.system(f'mkdir -p {os.path.join(os.path.join(project_root, project_name), "media")}')
 
 
 def init_git(project_root):
