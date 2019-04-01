@@ -60,6 +60,6 @@ startproject(
     project_name='amazing_project',
     project_root='/home/amir/Desktop',
     db='postgres',
-    python_version=3.7
+    python_version=3.7,
 )
 

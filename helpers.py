@@ -96,7 +96,7 @@ def create_Dockerfile(project_root, python_version, db, requirements_file=None,
             # relative path to Dockerfile
             entrypoint_file = handlers.get_relative_path(entrypoint_file, os.path.dirname(docker_path))
             docker_file.write(f"RUN chmod +x {entrypoint_file}\n\n")
-            docker_file.write(f"""CMD ["{os.path.join('./', entrypoint_file)}"]\n""")
+            docker_file.write(f"""CMD ["bash", "{os.path.join('/project_core/', entrypoint_file)}"]\n""")
 
         print(f"(++) Docker file created in {docker_path}")
     except Exception as e:
@@ -134,6 +134,7 @@ def create_entrypoint(project_root):
                                                                              os.path.dirname(entrypoint_path)),
                                                   'manage.py'
                                                   )
+            entrypoint_file.write(f"python {managepy_relative_path} makemigrations\n")
             entrypoint_file.write(f"python {managepy_relative_path} migrate\n")
             entrypoint_file.write(f"python {managepy_relative_path} collectstatic --noinput\n")
             # setting wsgi file.
