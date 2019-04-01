@@ -57,9 +57,9 @@ def startproject(project_name, project_root, db, python_version, django_version=
 
 
 startproject(
-    project_name='amazingprojec_t2',
+    project_name='amazing_project',
     project_root='/home/amir/Desktop/he',
     db='postgres',
-    python_version=3.7
+    python_version=2.7
 )
 

@@ -39,7 +39,9 @@ def create_Dockerfile(project_root, python_version, db, requirements_file=None,
             docker_file.write("ENV PYTHONDONTWRITEBYTECODE 1\n")
             docker_file.write("ENV PYTHONUNBUFFERED 1\n\n")
             if db == 'postgres':
-                docker_file.write("RUN apt install libpq-dev\n")
+                docker_file.write("RUN apt install libpq-dev\n\n")
+            else:
+                raise NotImplementedError()
             # creating project core folder.
             docker_file.write("WORKDIR /project_core\n")
             docker_file.write("COPY . /project_core\n\n")
@@ -194,13 +196,13 @@ def inspect_django_dependency(requirements_path, django_version=None):
 
 
 # for new projects only!
-def design_settings_file(project_name, project_root, db):
+def design_settings_file(project_name, project_root, python_version):
     settings_module = handlers.get_settings_file(project_root)
     settings_backup = settings_module + '.backup'
 
     try:
         # replacing the new one.
-        if db == 'postgres':
+        if python_version >= 3:
             os.system(f'mv {settings_module} {settings_backup}')
             os.system(f'cp ./dj/dj2/postgres/settings.py {settings_module}')
             inspect_postgres_dependency(get_or_create_requirements(project_root))
@@ -210,7 +212,8 @@ def design_settings_file(project_name, project_root, db):
                 settings.write(f"\n\nROOT_URLCONF = '{project_name}.urls'")
                 settings.write(f"\nWSGI_APPLICATION = '{project_name}.wsgi.application'")
         else:
-            pass
+            raise NotImplementedError("version 1 settings")
+
     except Exception as e:
         print('(!!) An error occurred designing settings file. rolling back ... ')
         os.system(f"mv {settings_backup} {settings_module}")
@@ -294,7 +297,9 @@ def create_docker_compose(project_root, db):
             return
 
     if db == 'postgres':
-        os.system(f'cp ./dj/dj2/postgres/docker-compose.yaml {os.path.join(os.path.dirname(handlers.get_managepy_path(project_root)), "docker-compose.yaml")}')
+        os.system(f'cp ./docker-compose/postgres/docker-compose.yaml {os.path.join(os.path.dirname(handlers.get_managepy_path(project_root)), "docker-compose.yaml")}')
+    else:
+        raise NotImplementedError()
 
 
 def has_valid_name_django(name):

@@ -6,7 +6,7 @@ version: '3'
 services:
   web:
     restart: always
-    build: .
+    build: ../../dj/dj2/postgres
     ports:
       - 8000:8000
     networks:
