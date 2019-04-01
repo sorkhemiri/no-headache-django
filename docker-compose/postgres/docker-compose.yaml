@@ -15,8 +15,8 @@ services:
       - db
     volumes:
       - ./:/project_core
-      - ../development_data/static:/project_core/static
-      - ../development_data/media:/project_core/media
+      - ../development_data/static:/static/
+      - ../development_data/media:/media/
     command: bash -c "python manage.py makemigrations && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
 
     environment:
