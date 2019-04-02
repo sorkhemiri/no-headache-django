@@ -54,12 +54,3 @@ def startproject(project_name, project_root, db, python_version):
         if can_sudo():
             print("(!!) Resetting permissions")
             os.system(f'chmod 777 -R {project_path}')
-
-
-startproject(
-    project_name='amazing_project',
-    project_root='/home/amir/Desktop',
-    db='postgres',
-    python_version=2.7,
-)
-

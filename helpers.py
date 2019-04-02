@@ -255,6 +255,7 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
     venv_path = os.path.join('../', project_root, 'venv')
     if not os.path.exists(venv_path):
         os.system(f'virtualenv --python python{python_version} {venv_path}')
+
     # installing django
     if django_version:
         os.system(f'{os.path.join(venv_path, "bin/pip")} install django=={django_version}')
