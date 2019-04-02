@@ -9,6 +9,7 @@ def startproject(project_name, project_root, db, python_version):
         raise IOError("(!!) Project names only have numbers, letters or underscores.")
 
     project_path = os.path.join(project_root, project_name)
+
     if os.path.exists(project_path):
         print(f"(!!) A project named {project_name} already exists in {project_root}.")
         print(f"If you Continue there may be bad consequences!")
@@ -30,6 +31,8 @@ def startproject(project_name, project_root, db, python_version):
 
         if db == 'postgres':
             helpers.inspect_postgres_dependency(requirements_path)
+        else:
+            raise NotImplementedError()
 
         # creating Dockerfile
         helpers.create_entrypoint(project_path)
@@ -40,6 +43,9 @@ def startproject(project_name, project_root, db, python_version):
         helpers.init_git(os.path.join(project_path, project_name))
         # adding readme.rst
         helpers.add_readme_file(os.path.join(project_path, project_name))
+
+        print("(!!) Successfully dockerized your project. Dockerization may have problems in some cases which project structure is not standard.")
+        print("(!!) Check standard projec structure in http://github.com/mrsaemir/no-headache-django README.md")
 
     except PermissionError as e:
         if can_sudo():
@@ -54,3 +60,38 @@ def startproject(project_name, project_root, db, python_version):
         if can_sudo():
             print("(!!) Resetting permissions")
             os.system(f'chmod 777 -R {project_path}')
+
+
+# for the use of projects that are not initiated using this awesome script
+def dockerize(project_root, python_version, db):
+    print('(!!) Use with CAUTION! Your projects structure may be not standard and running this project may cause problems in your scripts. Take backups.')
+
+    choice = input("To continue press c/C")
+    if choice.lower() != 'c':
+        print("(!!) Avoiding Dockerization.")
+        return
+
+    try:
+        # db will be auto detected soon
+        helpers.patch_settings(project_root, db)
+        requirements_file = helpers.get_or_create_requirements(project_root)
+        helpers.inspect_postgres_dependency(requirements_file)
+        helpers.inspect_gunicorn_dependency(requirements_file)
+        helpers.inspect_django_dependency(requirements_file, project_root)
+        helpers.create_entrypoint(project_root)
+        helpers.create_Dockerfile(project_root, f"python:{python_version}", 'postgres')
+        helpers.create_docker_compose(project_root, db)
+
+    except PermissionError as e:
+        if can_sudo():
+            pass
+        else:
+            raise PermissionError("(!!) Run as Administrator or change permissions.")
+
+    except Exception as e:
+        raise
+
+    finally:
+        if can_sudo():
+            print("(!!) Resetting permissions")
+            os.system(f'chmod 777 -R {project_root}')

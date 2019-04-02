@@ -126,7 +126,7 @@ def get_settings_file(project_root):
         if len(settings_abs_path) != 1:
             raise FileExistsError(
                 f"""(!!) There are more than one settings.py modules within this directory ({project_root}),
-                Found wsgi.py modules are:
+                Found settings.py modules are:
                 {settings_abs_path}
                 """
             )
