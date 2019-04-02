@@ -1,7 +1,7 @@
 import os
 import helpers
 from file_handlers import can_sudo
-
+import sys
 
 # starting a new project
 def startproject(project_name, project_root, db, python_version):
@@ -54,3 +54,6 @@ def startproject(project_name, project_root, db, python_version):
         if can_sudo():
             print("(!!) Resetting permissions")
             os.system(f'chmod 777 -R {project_path}')
+
+if __name__ == "__main__":
+    startproject(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
