@@ -201,7 +201,7 @@ def inspect_django_dependency(requirements_path, project_root):
 
 
 # for new projects only!
-def design_settings_file(project_name, project_root, db,python_version):
+def design_settings_file(project_name, project_root, db, python_version):
     settings_module = handlers.get_settings_file(project_root)
     settings_backup = settings_module + '.backup'
 
@@ -326,3 +326,23 @@ def create_docker_compose(project_root, db):
 def has_valid_name_django(name):
     import re
     return re.fullmatch(r'[a-z0-9_]+', name.lower())
+
+
+# patching settings for old projects that are not initialized by this script
+def patch_settings(project_root, db):
+    settings_module = handlers.get_settings_file(project_root)
+    settings_backup = settings_module + '.backup'
+    try:
+        os.system(f'cp {settings_module} {settings_backup}')
+        if db == 'postgres':
+            with open('./patches/postgres/patches.py', 'r') as patch:
+                patch = patch.read()
+            handlers.add_to_file(patch, settings_module)
+            inspect_postgres_dependency(get_or_create_requirements(project_root))
+            print("(++) Successfully patched your project to be used with postgres")
+        else:
+            raise NotImplementedError()
+    except Exception as e:
+        print("(!!) Can not patch. rolling back ...")
+        os.system(f"mv {settings_backup} {settings_module}")
+        raise
