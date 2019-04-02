@@ -214,7 +214,17 @@ def design_settings_file(project_name, project_root, db,python_version):
             else:
                 raise NotImplementedError()
         else:
-            raise NotImplementedError("version 1 settings")
+            if db == 'postgres':
+                os.system(f'mv {settings_module} {settings_backup}')
+                os.system(f'cp ./dj/dj1/postgres/settings.py {settings_module}')
+                inspect_postgres_dependency(get_or_create_requirements(project_root))
+                os.system(f"rm {settings_backup}")
+
+                with open(settings_module, 'a+') as settings:
+                    settings.write(f"\nROOT_URLCONF = '{project_name}.urls'")
+                    settings.write(f"\nWSGI_APPLICATION = '{project_name}.wsgi.application'")
+            else:
+                raise NotImplementedError("version 1 settings")
 
     except Exception as e:
         print('(!!) An error occurred designing settings file. rolling back ... ')
