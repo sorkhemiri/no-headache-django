@@ -25,7 +25,7 @@ def startproject(project_name, project_root, db, python_version):
         helpers.design_settings_file(project_name, project_path, db, python_version)
         # checking dependencies
         requirements_path = helpers.get_or_create_requirements(project_path)
-        helpers.inspect_django_dependency(requirements_path)
+        helpers.inspect_django_dependency(requirements_path, project_root)
         helpers.inspect_gunicorn_dependency(requirements_path)
 
         if db == 'postgres':

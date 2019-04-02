@@ -164,7 +164,7 @@ def get_or_create_requirements(project_root):
             print('(!!) Requirements.txt file deleted. raising the exception ...')
             raise
     # inspecting requirements ...
-    inspect_django_dependency(requirements_file_path)
+    inspect_django_dependency(requirements_file_path, project_root)
     inspect_gunicorn_dependency(requirements_file_path)
     return requirements_file_path
 
@@ -183,15 +183,21 @@ def inspect_postgres_dependency(requirements_path):
         requirements = requirements_file.read()
         if 'psycopg2-binary' not in requirements.lower():
             print('(++) Adding Postgres to project requirements.')
-            requirements_file.write('\npsycopg2-binary==2.7.4')
+            requirements_file.write('\n\npsycopg2-binary==2.7.4')
 
 
-def inspect_django_dependency(requirements_path):
+def inspect_django_dependency(requirements_path, project_root):
     with open(requirements_path, 'r+') as requirements_file:
         requirements = requirements_file.read()
         if 'django' not in requirements.lower():
-            print('(++) Adding Django to project requirements.')
-            requirements_file.write('\nDjango')
+            # checking if venv exists in project:
+            venv_path = os.path.join('../', project_root, 'venv')
+            if os.path.exists(venv_path):
+                #raise IOError()
+                os.system(f"{os.path.join(venv_path, 'bin/pip')} freeze --version | grep Django >> {requirements_path}")
+            else:
+                print('(++) Adding Django to project requirements.')
+                requirements_file.write('\nDjango')
 
 
 # for new projects only!
@@ -262,7 +268,7 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
         # creating the project
         try:
             os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
-            inspect_django_dependency(get_or_create_requirements(project_root))
+            inspect_django_dependency(get_or_create_requirements(project_root), project_root)
         except:
             print("(!!) Error. Rolling back ... ")
             os.system(f'rm -rf {project_path}')
@@ -271,7 +277,7 @@ def init_dj_project(project_name, project_root, python_version, django_version=N
         os.system(f'{os.path.join(venv_path, "bin/pip")} install django')
         # creating the project
         os.system(f'cd {project_root} && {os.path.join(venv_path, "bin/django-admin")} startproject {project_name}')
-        inspect_django_dependency(get_or_create_requirements(project_root))
+        inspect_django_dependency(get_or_create_requirements(project_root), project_root)
 
 
 def init_git(project_root):
